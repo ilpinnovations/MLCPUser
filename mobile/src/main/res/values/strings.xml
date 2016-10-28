@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">MLCP</string>
+    <string name="action_about">About</string>
+    <string name="about">Multi Level Car Parking is a multi-storey automatic system where users can park their cars and track the details using the App.</string>
+
+    <string name="a1">MLCP</string>
+    <string name="a2">USER</string>
+    <string name="a3">No current allocation.</string>
+    <string name="a4">My Slot</string>
+    <string name="a5">Parking Info</string>
+    <string name="a6">Parking Stats</string>
+    <string name="a7">My Cars</string>
+    <string name="a8">Car Number</string>
+    <string name="copyrightText">&#169; ILP Innovations 2016</string>
+</resources>
