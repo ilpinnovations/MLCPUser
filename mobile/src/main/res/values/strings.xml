@@ -12,4 +12,9 @@
     <string name="a7">My Cars</string>
     <string name="a8">Car Number</string>
     <string name="copyrightText">&#169; ILP Innovations 2016</string>
+
+    <string name="notification_reply">Prompt Text</string>
+
+    <string name="check_permission_key">permission_key</string>
+    <string name="permission_default_value">false</string>
 </resources>

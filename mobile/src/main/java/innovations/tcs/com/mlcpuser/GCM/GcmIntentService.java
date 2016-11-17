@@ -27,6 +27,7 @@ public class GcmIntentService extends GcmListenerService implements GoogleApiCli
         GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MY TAG";
     private GoogleApiClient mGoogleApiClient;
+    private static final int NOTIFICATION_ID = 1;
 
     @Override
     public void onStart(Intent intent, int startId) {
@@ -96,7 +97,7 @@ public class GcmIntentService extends GcmListenerService implements GoogleApiCli
         phoneNotificationBuilder.setContentIntent(intent);
         phoneNotificationBuilder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
         phoneNotificationBuilder.setSound(soundUri);
-        notificationManager.notify(0, phoneNotificationBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, phoneNotificationBuilder.build());
 
         sendNotification(message);
 

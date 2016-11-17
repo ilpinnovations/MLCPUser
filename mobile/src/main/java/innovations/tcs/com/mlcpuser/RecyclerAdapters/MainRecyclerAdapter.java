@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import innovations.tcs.com.mlcpuser.Activities.MainActivity;
 import innovations.tcs.com.mlcpuser.Beans.OptionBean;
 import innovations.tcs.com.mlcpuser.Interfaces.Communicator;
 import innovations.tcs.com.mlcpuser.R;
@@ -20,12 +21,14 @@ public class MainRecyclerAdapter extends RecyclerView.Adapter<MainRecyclerAdapte
     LayoutInflater layoutInflater;
     ArrayList<OptionBean> optionBeansList = new ArrayList<OptionBean>();
     Communicator communicator;
+//    Context context;
 
     public MainRecyclerAdapter(Context context, ArrayList<OptionBean> optionBeansList) {
 
         this.layoutInflater = LayoutInflater.from(context);
         this.optionBeansList = optionBeansList;
         this.communicator = (Communicator) context;
+//        this.context = context;
     }
 
     @Override
