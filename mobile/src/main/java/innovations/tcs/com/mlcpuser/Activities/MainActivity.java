@@ -63,7 +63,6 @@ import innovations.tcs.com.mlcpuser.AsyncTasks.ParkingAvailable;
 import innovations.tcs.com.mlcpuser.Beans.OptionBean;
 import innovations.tcs.com.mlcpuser.Databases.DatabaseHandler;
 import innovations.tcs.com.mlcpuser.Databases.DatabaseHandlerCarList;
-import innovations.tcs.com.mlcpuser.GPSTrackerService;
 import innovations.tcs.com.mlcpuser.GeoFencingService;
 import innovations.tcs.com.mlcpuser.Interfaces.Communicator;
 import innovations.tcs.com.mlcpuser.R;
@@ -97,8 +96,6 @@ public class MainActivity extends AppCompatActivity implements Communicator,
     private Menu menu;
     private static boolean OPTION_FLAG = true;
 
-    // GPSTracker class
-    GPSTrackerService gps;
     private final static String FENCE_ID = "com.tcs.innovations.geofence";
     private final int RADIUS = 200;
     private Geofence mGeofence;
@@ -118,17 +115,18 @@ public class MainActivity extends AppCompatActivity implements Communicator,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            int hasLocationPermission = checkSelfPermission( Manifest.permission.ACCESS_FINE_LOCATION );
-            List<String> permissions = new ArrayList<String>();
-            if( hasLocationPermission != PackageManager.PERMISSION_GRANTED ) {
-                permissions.add( Manifest.permission.ACCESS_FINE_LOCATION );
-            }
 
-            if( !permissions.isEmpty() ) {
-                requestPermissions( permissions.toArray( new String[permissions.size()] ), REQUEST_CODE_SOME_FEATURES_PERMISSIONS );
-            }
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+//            int hasLocationPermission = checkSelfPermission( Manifest.permission.ACCESS_FINE_LOCATION );
+//            List<String> permissions = new ArrayList<String>();
+//            if( hasLocationPermission != PackageManager.PERMISSION_GRANTED ) {
+//                permissions.add( Manifest.permission.ACCESS_FINE_LOCATION );
+//            }
+//
+//            if( !permissions.isEmpty() ) {
+//                requestPermissions( permissions.toArray( new String[permissions.size()] ), REQUEST_CODE_SOME_FEATURES_PERMISSIONS );
+//            }
+//        }
 
         verifyPlayServices();
 
@@ -137,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements Communicator,
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        googleApiClient.connect();
 
         mIntent = new Intent( this, GeoFencingService.class );
         mPendingIntent = PendingIntent.getService( this, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT );
@@ -154,18 +153,10 @@ public class MainActivity extends AppCompatActivity implements Communicator,
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(gridLayoutManager);
 
-        if (db.getContactsCount() <= 0) {
-            db.close();
-
-            Intent i = new Intent(this, LoginActivity.class);
-            startActivity(i);
-            finish();
-        } else {
-            toolbar.setSubtitle(db.getAllContacts().get(0).getName());
-            if (checkInternetConnection()) {
-                listener();
-                new ParkingAvailable(MainActivity.this).execute("");
-            }
+        toolbar.setSubtitle(db.getAllContacts().get(0).getName());
+        if (checkInternetConnection()) {
+            listener();
+            new ParkingAvailable(MainActivity.this).execute("");
         }
 
         OptionBean ob;
@@ -183,27 +174,6 @@ public class MainActivity extends AppCompatActivity implements Communicator,
         GridLayoutManager layoutManager = new GridLayoutManager(getApplicationContext(), 2);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(recyclerAdapter);
-
-    }
-
-    private void getLocation() {
-        // create class object
-        gps = new GPSTrackerService(this);
-
-        // check if GPS enabled
-        if (gps.canGetLocation()) {
-
-            double latitude = gps.getLatitude();
-            double longitude = gps.getLongitude();
-
-            // \n is for new line
-            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_SHORT).show();
-        } else {
-            // can't get location
-            // GPS or Network is not enabled
-            // Ask user to enable GPS/network in settings
-            gps.showSettingsAlert();
-        }
     }
 
     void listener() {
@@ -327,15 +297,16 @@ public class MainActivity extends AppCompatActivity implements Communicator,
             builder.setPositiveButton("OK, GOT IT", null);
             builder.show();
             return true;
-        }else if (id == R.id.action_send){
-            if (OPTION_FLAG){
-                OPTION_FLAG = false;
-                menu.findItem(R.id.action_send).setTitle("Stop");
-                startGeofence();
-            }else {
-                OPTION_FLAG = true;
-                menu.findItem(R.id.action_send).setTitle("Start");
-                stopGeofence();
+        }
+        else if (id == R.id.logout){
+            DatabaseHandler db = new DatabaseHandler(this);
+            DatabaseHandlerCarList db2 = new DatabaseHandlerCarList(this);
+
+            if (db.truncateTable() && db2.truncateTable()){
+                Log.i(TAG, "Successful!");
+                finish();
+            } else{
+                Log.i(TAG, "Unsuccessful!");
             }
         }
         return super.onOptionsItemSelected(item);
@@ -347,6 +318,12 @@ public class MainActivity extends AppCompatActivity implements Communicator,
         // Ask for permission if it wasn't granted yet
         return (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED );
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+        super.onBackPressed();
     }
 
     private void verifyPlayServices() {
@@ -365,11 +342,12 @@ public class MainActivity extends AppCompatActivity implements Communicator,
 
     private void startGeofence() {
         Log.i("TAG", "startGeoFence");
-        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+//        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
 
         Geofence.Builder builder = new Geofence.Builder();
         mGeofence = builder.setRequestId(FENCE_ID)
-                .setCircularRegion(location.getLatitude(), location.getLongitude(), RADIUS)
+//                .setCircularRegion(location.getLatitude(), location.getLongitude(), RADIUS)
+                .setCircularRegion(MLCP_LATITUDE, MLCP_LONGITUDE, RADIUS)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .build();
@@ -395,6 +373,16 @@ public class MainActivity extends AppCompatActivity implements Communicator,
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (googleApiClient.isConnected())
+            stopGeofence();
+        googleApiClient.disconnect();
+//        stopGeofence();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
 
@@ -405,30 +393,33 @@ public class MainActivity extends AppCompatActivity implements Communicator,
     @Override
     protected void onResume() {
         super.onResume();
-        if ( !googleApiClient.isConnected() && !googleApiClient.isConnecting() ) {
-            googleApiClient.connect();
-        }
+//        if ( !googleApiClient.isConnected() && !googleApiClient.isConnecting() ) {
+//            googleApiClient.connect();
+//        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        googleApiClient.disconnect();
+
     }
 
     @Override
     public void onConnected(Bundle bundle) {
         Log.i(TAG, "onConnected()");
+        startGeofence();
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         Log.w(TAG, "onConnectionSuspended()");
+//        stopGeofence();
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.w(TAG, "onConnectionFailed()");
+//        stopGeofence();
     }
 
     @Override
@@ -444,97 +435,4 @@ public class MainActivity extends AppCompatActivity implements Communicator,
         }
     }
 
-    private void generateNotification(){
-        int thisConversationId = 42;
-
-        String message = "Number of free slots are 732 out of 947.";
-        //Log.d("My Tag","Message : "+ message);
-        Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-
-        Intent msgHeardIntent = new Intent()
-                .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
-                .setAction("innovations.tcs.com.mlcpuser.MY_ACTION_MESSAGE_HEARD")
-                .putExtra("conversation_id", thisConversationId);
-
-        PendingIntent msgHeardPendingIntent =
-                PendingIntent.getBroadcast(getApplicationContext(),
-                        thisConversationId,
-                        msgHeardIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-//        sendNotification(message);
-
-        Intent msgReplyIntent = new Intent()
-                .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
-                .setAction("innovations.tcs.com.mlcpuser.MY_ACTION_MESSAGE_REPLY")
-                .putExtra("conversation_id", thisConversationId);
-
-        PendingIntent msgReplyPendingIntent = PendingIntent.getBroadcast(
-                getApplicationContext(),
-                thisConversationId,
-                msgReplyIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // Build a RemoteInput for receiving voice input in a Car Notification
-        RemoteInput remoteInput = new RemoteInput.Builder(MY_VOICE_REPLY_KEY)
-                .setLabel(getApplicationContext().getString(R.string.notification_reply))
-                .build();
-//
-        // Create an unread conversation object to organize a group of messages
-        // from a particular sender.
-        String conversationName = "MLCP";
-        NotificationCompat.CarExtender.UnreadConversation.Builder unreadConvBuilder =
-                new NotificationCompat.CarExtender.UnreadConversation.Builder(conversationName)
-                        .setReadPendingIntent(msgHeardPendingIntent)
-                        .setReplyAction(msgReplyPendingIntent, remoteInput);
-
-        unreadConvBuilder.addMessage(message)
-                .setLatestTimestamp(System.currentTimeMillis());
-
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle("MLCP")
-                        .setContentText(message)
-                        .setGroup("GROUP")
-                        .setGroupSummary(false)
-                        .setContentIntent(msgHeardPendingIntent)
-                        .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000})
-                        .setSound(soundUri);
-
-        notificationBuilder.extend(new NotificationCompat.CarExtender()
-                .setUnreadConversation(unreadConvBuilder.build()));
-
-        NotificationManagerCompat msgNotificationManager =
-                NotificationManagerCompat.from(this);
-        msgNotificationManager.notify("tag",
-                thisConversationId, notificationBuilder.build());
-
-        sendNotification(message);
-    }
-
-    private void sendNotification(String message) {
-
-        if (googleApiClient.isConnected()) {
-            PutDataMapRequest dataMapRequest = PutDataMapRequest.create(Constants.NOTIFICATION_PATH);
-            dataMapRequest.getDataMap().putDouble(Constants.NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
-            dataMapRequest.getDataMap().putString(Constants.NOTIFICATION_TITLE, "MLCP");
-            dataMapRequest.getDataMap().putString(Constants.NOTIFICATION_CONTENT, message);
-            PutDataRequest putDataRequest = dataMapRequest.asPutDataRequest();
-            Wearable.DataApi.putDataItem(googleApiClient, putDataRequest);
-            Log.d("My TAG", "DATA Sent to wearable");
-        } else {
-            Log.d("My Tag", "Error");
-            try {
-                Thread.sleep(1000);
-                sendNotification(message);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-
-    }
 }

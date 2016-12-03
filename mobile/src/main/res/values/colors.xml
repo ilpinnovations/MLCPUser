@@ -3,7 +3,7 @@
     <color name="colorPrimary">#2a3c48</color>
     <color name="colorPrimaryDark">#1f2f3a</color>
     <color name="colorPrimaryLight">#3f5465</color>
-    <color name="colorAccent">#ffffff</color>
+    <color name="colorAccent">#FF5722</color>
 
     <color name="colorWhite">#ffffff</color>
     <color name="colorBlack">#000000</color>
@@ -11,6 +11,8 @@
     <color name="colorLightGray">#898989</color>
     <color name="colorUltraLightGray">#cacaca</color>
     <color name="colorButton">#1f2f3a</color>
+
+    <color name="colorMaterialGreen">#009688</color>
 
     <color name="transparent">#00000000</color>
 

@@ -283,7 +283,6 @@ public class MySlotActivity extends AppCompatActivity {
                                 diffHours = diff / (60 * 60 * 1000) % 24;
                                 long diffHours1 = diff / (60 * 60 * 1000);
                                 diffDays = (int) diffHours1 / 24;
-
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -297,7 +296,7 @@ public class MySlotActivity extends AppCompatActivity {
                             mySlotBeansList.add(msb);
 
                             String duration;
-                            if (diffHours == 0) {
+                            if (diffHours == 0 && diffDays != 0) {
                                 msb = new MySlotBean("4", diffMinutes + " mins");
                                 duration = diffMinutes + " mins";
                                 mySlotBeansList.add(msb);

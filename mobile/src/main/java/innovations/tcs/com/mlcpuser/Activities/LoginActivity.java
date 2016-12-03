@@ -84,6 +84,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
     ArrayList<String> vehicleNumberList;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
+    public int backCount = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -174,41 +176,53 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
             @Override
             public void onClick(View arg0) {
 
-                checkInternetConnection();
-
-                if ((vehicleNumber.getText().toString().length() == 0)) {
-                    Snackbar snackbar = Snackbar.make(arg0, "Please enter valid vehicle number.", Snackbar.LENGTH_LONG);
-                    snackbar.show();
-                } else if (fullName.getText().toString().length() == 0) {
-                    Snackbar snackbar = Snackbar.make(arg0, "Please enter full name.", Snackbar.LENGTH_LONG);
-                    snackbar.show();
-                } else if (!isValidName(fullName.getText().toString())) {
-                    Snackbar snackbar = Snackbar.make(arg0, "Please enter valid name.", Snackbar.LENGTH_LONG);
-                    snackbar.show();
-                } else {
-                    if (vehicles_added > 1) {
-                        if (!vehicleNumberList.contains(String.valueOf(new_vehicle.getText())))
-                            vehicleNumberList.add(String.valueOf(new_vehicle.getText()));
-                    } else {
-                        vehicleNumberList.add(String.valueOf(vehicleNumber.getText()));
-                    }
-
-                    emp_full_name = fullName.getText().toString();
-                    emp_vehicle_number = vehicleNumber.getText().toString();
-
-                    if (emp_full_name.trim().length() > 0) {
-                        if (checkPlayServices()) {
-                            /**GCM Reg ID Creation**/
-                            createGCM(emp_vehicle_number);
-                        }
-                    } else {
-                        Snackbar snackbar = Snackbar.make(arg0, "Please enter your details.", Snackbar.LENGTH_LONG);
+                if (cd.isConnectingToInternet()){
+                    if ((vehicleNumber.getText().toString().length() == 0)) {
+                        Snackbar snackbar = Snackbar.make(arg0, "Please enter valid vehicle number.", Snackbar.LENGTH_LONG);
                         snackbar.show();
+                    } else if (fullName.getText().toString().length() == 0) {
+                        Snackbar snackbar = Snackbar.make(arg0, "Please enter full name.", Snackbar.LENGTH_LONG);
+                        snackbar.show();
+                    } else if (!isValidName(fullName.getText().toString())) {
+                        Snackbar snackbar = Snackbar.make(arg0, "Please enter valid name.", Snackbar.LENGTH_LONG);
+                        snackbar.show();
+                    } else {
+                        if (vehicles_added > 1) {
+                            if (!vehicleNumberList.contains(String.valueOf(new_vehicle.getText())))
+                                vehicleNumberList.add(String.valueOf(new_vehicle.getText()));
+                        } else {
+                            vehicleNumberList.add(String.valueOf(vehicleNumber.getText()));
+                        }
+
+                        emp_full_name = fullName.getText().toString();
+                        emp_vehicle_number = vehicleNumber.getText().toString();
+
+                        if (emp_full_name.trim().length() > 0) {
+                            if (checkPlayServices()) {
+                                /**GCM Reg ID Creation**/
+                                createGCM(emp_vehicle_number);
+                            }
+                        } else {
+                            Snackbar snackbar = Snackbar.make(arg0, "Please enter your details.", Snackbar.LENGTH_LONG);
+                            snackbar.show();
+                        }
                     }
+                }else {
+                    checkInternetConnection();
                 }
             }
         });
     }
+
+//    @Override
+//    public void onBackPressed() {
+//        SplashActivity.backCount++;
+//        if (SplashActivity.backCount == 2){
+//            finish();
+//        }else {
+//            Toast.makeText(this, "Press once again to exit", Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
     private void createGCM(final String emp_vehicle_number) {
         new AsyncTask<Void, Void, String>() {
@@ -265,6 +279,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
 
     private void storeRegIdInServer(final String emp_vehicle_number) {
         AsyncHttpClient client = new AsyncHttpClient();
+        Log.i("TAG", "URL: " + AppConstant.GCM_SERVER_URL + " PARAMS: " + params);
         client.post(AppConstant.GCM_SERVER_URL, params,
                 new JsonHttpResponseHandler() {
                     @Override
@@ -327,6 +342,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
             _vehicleNumberList = vehicleNumberList;
             _mlcp_location = mlcp_location;
             _context = context;
+
+            Log.i("TAG", "carCount: " + vehicleNumberList.size());
         }
 
         @Override
@@ -337,6 +354,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
 
         protected String doInBackground(String... urls) {
 
+            Log.i("TAG", "doInBackground");
             BufferedReader reader = null;
 
             try {
@@ -345,6 +363,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
                 data += "&" + URLEncoder.encode("employeeId", "UTF-8") + "=" + URLEncoder.encode(_emp_vehicle_number, "UTF-8");
                 data += "&" + URLEncoder.encode("emp_full_name", "UTF-8") + "=" + URLEncoder.encode(_emp_full_name, "UTF-8");
                 URL url = new URL(_serverURL);
+
+                Log.i("TAG", "URL: " + url.toString());
 
                 URLConnection conn = url.openConnection();
                 conn.setDoOutput(true);
@@ -360,6 +380,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
                     sb.append(line + "\n");
                 }
 
+                Log.i("TAG", "stringBuilder: " + sb);
+
                 Content = sb.toString();
             } catch (Exception ex) {
                 Error = ex.getMessage();
@@ -374,6 +396,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
         }
 
         protected void onPostExecute(String unused) {
+            Log.i("TAG", "onPostExecute");
             if (Error != null) {
                 Toast.makeText(_context, "Error due to some network problem! Please connect to internet. ", Toast.LENGTH_LONG).show();
             } else {
@@ -389,18 +412,23 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener,
                                 Log.d("responseCarListFinal", j);
                             }
 
+                            Log.i("TAG", "Error: false");
+
+                            Log.i("TAG", "carCount: " + info.getVehicleNumberList().size());
+
                             db.addContact(info);
-                            carListDB.addCarList(info);
+                            carListDB.addCar(info);
 
                             if (db.getContactsCount() > 0) {
                                 db.close();
                                 finish();
                                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
                                 startActivity(i);
+                                finish();
                             }
                         } else if (error.equals("true")) {
                             String errorMsg = myJson.optString("errorMsg");
-                            Toast.makeText(_context, errorMsg, Toast.LENGTH_LONG).show();
+                            Toast.makeText(_context, errorMsg, Toast.LENGTH_SHORT).show();
                         }
                     }
                 } catch (Exception e) {

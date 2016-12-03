@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,15 @@ public class DatabaseHandlerCarList extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public void addCar(Info info) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        String car = info.getVehicleNumber();
+        values.put(KEY_VEHICLE_NUMBER, car);
+        db.insert(TABLE_INFO, null, values);
+        db.close();
+    }
+
     public void addCarList(Info info) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -62,6 +72,8 @@ public class DatabaseHandlerCarList extends SQLiteOpenHelper {
                 carList.add(cursor.getString(0));
             } while (cursor.moveToNext());
         }
+        cursor.close();
+        db.close();
         return carList;
     }
 
@@ -69,6 +81,28 @@ public class DatabaseHandlerCarList extends SQLiteOpenHelper {
         String countQuery = "SELECT * FROM " + TABLE_INFO;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
-        return cursor.getCount();
+        int count = cursor.getCount();
+        cursor.close();
+        db.close();
+        return count;
     }
+
+    public boolean truncateTable() {
+        String truncateQuery = "DELETE FROM " + TABLE_INFO;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(truncateQuery, null);
+        if (cursor.moveToFirst()){
+            Log.i("DATABASE HANDLER", "Unsuccessful truncation!");
+            cursor.close();
+            db.close();
+            return false;
+        }else {
+            Log.i("DATABASE HANDLER", "Truncate successful!");
+            cursor.close();
+            db.close();
+            return true;
+        }
+
+    }
+
 }

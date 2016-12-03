@@ -72,6 +72,8 @@ public class DatabaseHandlerMySlot extends SQLiteOpenHelper {
             mySlotDetailsList.add(cursor.getString(3));
             mySlotDetailsList.add(cursor.getString(4));
         }
+        cursor.close();
+        db.close();
         return mySlotDetailsList;
     }
 
@@ -79,6 +81,9 @@ public class DatabaseHandlerMySlot extends SQLiteOpenHelper {
         String countQuery = "SELECT * FROM " + TABLE;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
-        return cursor.getCount();
+        int count = cursor.getCount();
+        cursor.close();
+        db.close();
+        return count;
     }
 }

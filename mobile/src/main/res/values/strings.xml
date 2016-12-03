@@ -17,4 +17,6 @@
 
     <string name="check_permission_key">permission_key</string>
     <string name="permission_default_value">false</string>
+
+    <string name="logout">Logout</string>
 </resources>
