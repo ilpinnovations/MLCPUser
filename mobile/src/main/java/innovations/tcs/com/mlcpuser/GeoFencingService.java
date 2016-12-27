@@ -51,31 +51,6 @@ import innovations.tcs.com.mlcpuser.Utilities.ConnectionDetector;
  */
 public class GeoFencingService extends IntentService {
 
-    private static final String TAG = GeoFencingService.class.getSimpleName();
-
-    private static final int URL_TYPE_INFO = 1;
-    private static final int URL_TYPE_STATUS = 2;
-    private static final int CONVERSATION_ID_SLOTS = 41;
-    private static final int CONVERSATION_ID_HOURS = 42;
-
-    ConnectionDetector cd;
-
-    private NotificationManager mNotificationManager;
-    String MY_VOICE_REPLY_KEY = "voice_reply_key";
-
-    public GeoFencingService(String name) {
-        super(name);
-    }
-
-    public GeoFencingService() {
-        this( "Geofencing Service" );
-    }
-
-    @Override
-    public IBinder onBind(Intent intent ) {
-        return null;
-    }
-
     @Override
     protected void onHandleIntent( Intent intent ) {
 
@@ -109,6 +84,32 @@ public class GeoFencingService extends IntentService {
 
 
     }
+
+    private static final String TAG = GeoFencingService.class.getSimpleName();
+
+    private static final int URL_TYPE_INFO = 1;
+    private static final int URL_TYPE_STATUS = 2;
+    private static final int CONVERSATION_ID_SLOTS = 41;
+    private static final int CONVERSATION_ID_HOURS = 42;
+
+    ConnectionDetector cd;
+
+    private NotificationManager mNotificationManager;
+    String MY_VOICE_REPLY_KEY = "voice_reply_key";
+
+    public GeoFencingService(String name) {
+        super(name);
+    }
+
+    public GeoFencingService() {
+        this( "Geofencing Service" );
+    }
+
+    @Override
+    public IBinder onBind(Intent intent ) {
+        return null;
+    }
+
 
     public boolean checkInternetConnection() {
         if (!cd.isConnectingToInternet()) {
