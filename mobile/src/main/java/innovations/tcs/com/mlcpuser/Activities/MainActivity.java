@@ -342,12 +342,12 @@ public class MainActivity extends AppCompatActivity implements Communicator,
 
     private void startGeofence() {
         Log.i("TAG", "startGeoFence");
-//        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
 
         Geofence.Builder builder = new Geofence.Builder();
         mGeofence = builder.setRequestId(FENCE_ID)
-//                .setCircularRegion(location.getLatitude(), location.getLongitude(), RADIUS)
-                .setCircularRegion(MLCP_LATITUDE, MLCP_LONGITUDE, RADIUS)
+                .setCircularRegion(location.getLatitude(), location.getLongitude(), RADIUS)
+//                .setCircularRegion(MLCP_LATITUDE, MLCP_LONGITUDE, RADIUS)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .build();

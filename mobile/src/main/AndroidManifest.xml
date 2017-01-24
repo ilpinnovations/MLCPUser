@@ -102,7 +102,21 @@
             <!--android:resource="@xml/automotive_app_desc" />-->
 
         <service android:name=".GeoFencingService" />
+        <receiver
+            android:name=".BroadCastReciever.MessageReadReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="innovations.tcs.com.mlcpuser.MY_ACTION_MESSAGE_HEARD"/>
+            </intent-filter>
+        </receiver>
 
+        <receiver
+            android:name=".BroadCastReciever.MessageReplyReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="innovations.tcs.com.mlcpuser.MY_ACTION_MESSAGE_REPLY"/>
+            </intent-filter>
+        </receiver>
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
